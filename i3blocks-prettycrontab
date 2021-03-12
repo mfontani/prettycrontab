@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+use 5.020_000;
+use warnings;
+use open qw<:std :utf8>;
+use utf8;
+
+my $RX_LINE = qr{
+    \A
+    (?<deltaseconds> \d+ )
+    \t
+    (?<rest> .+ )
+    \z
+}xms;
+
+my @lines = qx!crontab -l | prettycrontab -deltaseconds -deltacoarse -timestamp=0!;
+chomp @lines;
+if (!@lines) {
+    say '';
+    exit 0;
+}
+
+my @munged;
+for my $line (@lines) {
+    if ($line =~ $RX_LINE) {
+        my ($deltaseconds, $rest) = ($+{deltaseconds}, $+{rest});
+        $rest =~ s!\s+! !xmsg;
+        if ($deltaseconds > 1800*3) { # Don't show me stuff that's WAY away.
+            next;
+        }
+        elsif ($deltaseconds < 180) {
+            push @munged, qq!<span fgcolor="#ddda00">$rest</span>!;
+        }
+        elsif ($deltaseconds < 300) {
+            push @munged, qq!<span fgcolor="#dd9900">$rest</span>!;
+        }
+        elsif ($deltaseconds > 1800) {
+            push @munged, qq!<span fgcolor="#999999">$rest</span>!;
+        }
+        else {
+            push @munged, $rest;
+        }
+    }
+}
+say join '   ·   ', @munged;
+for (@munged) {
+    s!\smins\s!m !xmsg;
+}
+say join ' · ', @munged;
+exit 0;
