@@ -128,6 +128,22 @@ Here are some examples taken from my own crontab:
     ## LABEL borg laptop
     11    *     *   *   *     /home/marco/.local/bin/borg-backup--borg-laptop cron >/dev/null 2>&1
 
+## Vim syntax
+
+If you want the labels to show up differently in your vim, you may want to use
+something like the following. Change colours to suit:
+
+    " Neater syntax for "prettycrontab" for crontabs
+    augroup ft_crontab
+        autocmd!
+        autocmd Syntax crontab syntax match PrettyCrontabLabel "^## LABEL" contained
+        autocmd Syntax crontab syntax match PrettyCrontabFullLabel "^## LABEL.*" contains=PrettyCrontabLabel
+        autocmd Syntax crontab syntax match PrettyCrontabUninteresting "^## UNINTERESTING"
+        autocmd Syntax crontab highlight PrettyCrontabFullLabel guifg=#a0f0d0
+        autocmd Syntax crontab highlight PrettyCrontabLabel guifg=#90a0c0
+        autocmd Syntax crontab highlight PrettyCrontabUninteresting guifg=#607090
+    augroup end
+
 ## Copyright and License
 
 `prettycrontab` is Copyright (c) 2021, Marco Fontani <MFONTANI@cpan.org>
