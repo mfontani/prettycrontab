@@ -13,6 +13,11 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// Version contains the binary version. This is added at build time.
+var Version = "uncommitted"
+
+var showVersion = false
+
 var showDeltaSeconds bool = false
 var showDeltaHMS bool = false
 var showDeltaCoarse bool = false
@@ -23,6 +28,7 @@ var showRedirectDetails bool = false
 var now time.Time = time.Now()
 
 func init() {
+	flag.BoolVar(&showVersion, "version", showVersion, `Displays version information, then exits`)
 	flag.BoolVar(&showDeltaSeconds, "deltaseconds", showDeltaSeconds, `Show delta seconds until next run, before delta hms and full timestamp`)
 	flag.BoolVar(&showDeltaHMS, "deltahms", showDeltaHMS, `Show delta h/m/s until next run, before full timestamp`)
 	flag.BoolVar(&showDeltaCoarse, "deltacoarse", showDeltaCoarse, `Show "coarse" delta h/m/s until next run, before full timestamp`)
@@ -44,8 +50,13 @@ func init() {
 		fmt.Fprintf(os.Stderr, "\t* * * * * /usr/local/bin/foo --bar >/dev/null 2>&1 # shown as-is as the custom label is only valid for one entry\n")
 		fmt.Fprintf(os.Stderr, "\nOptions:\n")
 		flag.PrintDefaults()
+		fmt.Printf("\nThis is prettycrontab %s\n", Version)
 	}
 	flag.Parse()
+	if showVersion {
+		fmt.Printf("%s\n", Version)
+		os.Exit(0)
+	}
 	if showDeltaHMS && showDeltaCoarse {
 		panic(fmt.Errorf("cannot -deltahms and -deltacoarse at the same time"))
 	}

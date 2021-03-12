@@ -1,0 +1,33 @@
+---
+name: Build
+"on":
+  push:
+    branches:
+      - '*'
+    tags:
+      - '!**'
+
+jobs:
+
+  test:
+    runs-on: ubuntu-20.04
+    container: mfontani/gobuzz
+    steps:
+      - uses: actions/checkout@v2
+      - run: go mod download
+      - run: go vet
+      - run: go test ./...
+        env:
+          TZ: UTC
+
+  build:
+    needs: [test]
+    runs-on: ubuntu-20.04
+    container: mfontani/gobuzz
+    steps:
+      - uses: actions/checkout@v2
+      - run: go mod download
+      - run: ./.dev/build-static.sh
+      # Ensure it runs...
+      - run: ./prettycrontab -help
+      - run: sh -c 'echo "* * * * * foo" | ./prettycrontab'

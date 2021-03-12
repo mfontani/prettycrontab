@@ -1,0 +1,63 @@
+---
+name: Release
+"on":
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
+    container: mfontani/gobuzz
+    steps:
+      - uses: actions/checkout@v2
+      - run: go mod download
+      # Sanity...
+      - run: go test ./...
+        env:
+          TZ: UTC
+      - run: ./.dev/build-static.sh
+      # Ensure it runs...
+      - run: ./prettycrontab -help
+      - run: sh -c 'echo "* * * * * foo" | ./prettycrontab'
+      # Compress and upload...
+      - run: xz --compress --stdout prettycrontab > prettycrontab.xz
+      - uses: actions/upload-artifact@master
+        with:
+          name: prettycrontab.xz
+          path: prettycrontab.xz
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-20.04
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url}}
+    steps:
+      - id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+
+  upload:
+    needs: [release]
+    strategy:
+      matrix:
+        file: ['prettycrontab.xz']
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: ${{ matrix.file }}
+          path: .
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./${{ matrix.file }}
+          asset_name: ${{ matrix.file }}
+          asset_content_type: application/x-xz
