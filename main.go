@@ -25,7 +25,9 @@ var showTimestamp bool = true
 var showCronSpec bool = false
 var showRedirectDetails bool = false
 
-var now time.Time = time.Now()
+var timeFormat = "2006-01-02T15:04:05MST"
+var nowTimestamp = time.Now().Format(timeFormat)
+var now time.Time
 
 func init() {
 	flag.BoolVar(&showVersion, "version", showVersion, `Displays version information, then exits`)
@@ -35,6 +37,7 @@ func init() {
 	flag.BoolVar(&showTimestamp, "timestamp", showTimestamp, `Show full timestamp, before cron spec`)
 	flag.BoolVar(&showCronSpec, "spec", showCronSpec, `Show full/original cron spec (i.e. the "* * * * *" bits + command etc.).`)
 	flag.BoolVar(&showRedirectDetails, "redir", showRedirectDetails, `(requires -spec=0) Show redirect details (">/dev/null", "2>&1") in command`)
+	flag.StringVar(&nowTimestamp, "now", nowTimestamp, `override the timestamp from "now" to a given date/time (`+timeFormat+` format required)`)
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n\tcrontab -l | prettycrontab [OPTIONS]\n\n")
 		fmt.Fprintf(os.Stderr, "Shows the next run time of interesting cron entries, from most recent to least.\n")
@@ -59,6 +62,11 @@ func init() {
 	}
 	if showDeltaHMS && showDeltaCoarse {
 		panic(fmt.Errorf("cannot -deltahms and -deltacoarse at the same time"))
+	}
+	var err error
+	now, err = time.Parse(timeFormat, nowTimestamp)
+	if err != nil {
+		panic(fmt.Errorf("Could not parse -now '%s': %v", nowTimestamp, err))
 	}
 }
 
