@@ -31,3 +31,4 @@ jobs:
       # Ensure it runs...
       - run: ./prettycrontab -help
       - run: sh -c 'echo "* * * * * foo" | ./prettycrontab'
+      - run: sh -c 'echo "* * * * * foo" | ./prettycrontab -now 1970-01-01T00:00:00UTC'
