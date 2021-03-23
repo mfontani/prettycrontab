@@ -63,6 +63,11 @@ The timestamp can be removed via `-timestamp=false`:
     echo '* */3 * * * /usr/local/bin/foo --bar >/dev/null 2>&1' | TZ=UTC ./prettycrontab -deltahms -timestamp=false
     1h 55m 16s      /usr/local/bin/foo --bar
 
+The date/time from which to start displaying which crons will run defaults to
+"now", but can be overridden via the `-now TIMESTAMP` option.
+The `TIMESTAMP` needs to be in the `2006-01-02T15:04:05MST` format (i.e.:
+`1970-01-01T00:00:00GMT`).
+
 You can read `prettycrontab --help` and play with the options.
 
 ## Advanced use
